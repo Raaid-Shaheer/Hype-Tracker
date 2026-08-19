@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#101014">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Hype Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #101014;
+    --bg-2: #0a0a0d;
+    --surface: rgba(255,255,255,0.045);
+    --surface-solid: #1a1a20;
+    --border: rgba(255,255,255,0.09);
+    --text: #F3F1EE;
+    --text-muted: #96909f;
+    --text-faint: #56505f;
+    --flame: #FFB020;
+
+    --home: #F3F1EE;
+    --home-strong: #C9C5D0;
+    --home-glow: rgba(243,241,238,0.30);
+    --home-dim: rgba(243,241,238,0.12);
+
+    --kdrama: #C7B3FF;
+    --kdrama-strong: #8B6EF0;
+    --kdrama-glow: rgba(139,110,240,0.45);
+    --kdrama-dim: rgba(139,110,240,0.14);
+
+    --tvshows: #7CE6A6;
+    --tvshows-strong: #22C55E;
+    --tvshows-glow: rgba(34,197,94,0.45);
+    --tvshows-dim: rgba(34,197,94,0.14);
+
+    --movies: #FF9FB2;
+    --movies-strong: #FF4D6D;
+    --movies-glow: rgba(255,77,109,0.45);
+    --movies-dim: rgba(255,77,109,0.14);
+
+    --songs: #6FE8FF;
+    --songs-strong: #22B8DE;
+    --songs-glow: rgba(34,184,222,0.45);
+    --songs-dim: rgba(34,184,222,0.14);
+
+    --actors: #FFC082;
+    --actors-strong: #FF9900;
+    --actors-glow: rgba(255,153,0,0.45);
+    --actors-dim: rgba(255,153,0,0.14);
+
+    --cur-color: var(--home);
+    --cur-strong: var(--home-strong);
+    --cur-glow: var(--home-glow);
+    --cur-dim: var(--home-dim);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { background: var(--bg); }
+  body {
+    margin: 0;
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 15% 8%, var(--kdrama-glow) 0%, transparent 28%),
+      radial-gradient(circle at 88% 14%, var(--actors-glow) 0%, transparent 26%),
+      var(--bg);
+    background-attachment: fixed;
+    padding-bottom: 128px;
+  }
+  .display { font-family: 'Bebas Neue', 'Inter', sans-serif; letter-spacing: 0.03em; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; letter-spacing: 0.06em; }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 18px 16px 14px;
+    background: linear-gradient(to bottom, var(--bg) 60%, transparent);
+  }
+  header h1 {
+    margin: 0;
+    font-size: 26px;
+    color: var(--text);
+  }
+  header .flame-mark { font-size: 22px; filter: drop-shadow(0 0 10px var(--actors-glow)); }
+
+  main {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  .cat-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 22px 0 12px;
+  }
+  .cat-heading .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cur-color); box-shadow: 0 0 8px var(--cur-glow); }
+  .cat-heading h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--cur-color);
+  }
+  .cat-heading .sub {
+    font-size: 10px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+  }
+
+  .add-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .list-search-row { margin-bottom: 14px; }
+  input[type="text"] {
+    flex: 1;
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+  }
+  input[type="text"]::placeholder { color: var(--text-faint); }
+  input[type="text"]:focus { outline: none; border-color: var(--text-muted); }
+  #list-search-input { border-color: var(--border); }
+  #list-search-input:focus { border-color: var(--cur-color); }
+  button.icon-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  button.icon-btn:active { transform: scale(0.94); }
+
+  #cast-status {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin: 2px 2px 14px;
+    line-height: 1.5;
+  }
+
+  #verify-box {
+    display: none;
+    padding: 13px 14px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+  #verify-box p { margin: 0 0 10px; font-size: 13.5px; color: var(--text); line-height: 1.5; }
+  .verify-actions { display: flex; gap: 8px; }
+  .verify-actions button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .verify-cancel { background: var(--surface-solid); color: var(--text-muted); }
+  .verify-confirm { background: var(--actors-strong); color: #24140a; }
+  .verify-confirm:active, .verify-cancel:active { transform: scale(0.97); }
+
+  #search-results { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .search-result {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+  .search-result img, .search-result .avatar-fallback {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: var(--surface-solid);
+    flex-shrink: 0;
+  }
+  .search-result .info { flex: 1; min-width: 0; }
+  .search-result .name { font-size: 14px; font-weight: 600; }
+  .search-result .extract {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .search-result button {
+    border: none;
+    background: var(--actors-strong);
+    color: #24140a;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .empty {
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 13.5px;
+    padding: 34px 20px;
+    border: 1px dashed var(--border);
+    border-radius: 16px;
+  }
+
+  .item-list { display: flex; flex-direction: column; gap: 10px; }
+  .item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .item.rank-1 { border-color: var(--cur-glow); box-shadow: 0 0 26px -6px var(--cur-glow); }
+  .item.search-match { border-color: var(--cur-color); }
+
+  .rank-num {
+    font-size: 19px;
+    width: 26px;
+    flex-shrink: 0;
+    color: var(--cur-color);
+    text-align: center;
+  }
+
+  .item-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+  }
+
+  .item img, .avatar-fallback {
+    width: 44px; height: 44px;
+    border-radius: 11px;
+    object-fit: cover;
+    background: var(--surface-solid);
+    flex-shrink: 0;
+  }
+  .avatar-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--cur-color);
+    background: var(--cur-dim);
+  }
+
+  .item-body { flex: 1; min-width: 0; }
+  .item-body .name {
+    font-size: 14.5px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 6px;
+  }
+  .meter { width: 100%; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.08); overflow: hidden; }
+  .meter-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--cur-strong), var(--cur-color)); }
+
+  .del {
+    border: none;
+    background: transparent;
+    color: var(--text-faint);
+    font-size: 17px;
+    padding: 4px 6px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .del:active { color: var(--text-muted); }
+
+  .vote-cluster { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+  .downvote {
+    border: none;
+    background: var(--surface-solid);
+    color: var(--text-muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.12s ease;
+  }
+  .downvote:active { transform: scale(0.88); }
+
+  .upvote {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    background: var(--surface-solid);
+    padding: 9px 12px;
+    border-radius: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: transform 0.12s ease;
+    color: var(--cur-color);
+  }
+  .upvote svg { width: 17px; height: 17px; }
+  .upvote:active { transform: scale(0.88); }
+  @keyframes flame-burst {
+    0% { box-shadow: 0 0 0 0 currentColor; }
+    100% { box-shadow: 0 0 0 14px transparent; }
+  }
+  .upvote.burst { animation: flame-burst 0.5s ease-out; }
+
+  /* Home page cards */
+  .home-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 18px;
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--card-glow, var(--border));
+    box-shadow: 0 0 22px -10px var(--card-glow, transparent);
+    cursor: pointer;
+    transition: transform 0.12s ease;
+  }
+  .home-card:active { transform: scale(0.98); }
+  .home-card-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--card-color, var(--text-muted));
+    font-weight: 700;
+  }
+  .home-card-main { display: flex; align-items: center; gap: 14px; }
+  .home-card-main img, .home-card-avatar-fallback {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .home-card-avatar-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--card-color, var(--text-muted));
+    background: var(--card-dim, var(--surface-solid));
+  }
+  .home-card-info { min-width: 0; }
+  .home-card-name {
+    font-size: 17px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .home-card-hype {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--card-color, var(--text-muted));
+    margin-top: 4px;
+  }
+  .home-card-hype svg { width: 15px; height: 15px; }
+  .home-card.empty-home-card { opacity: 0.65; }
+  .home-card-empty { font-size: 13.5px; color: var(--text-faint); }
+
+  .backup-row { display: flex; gap: 8px; margin: 26px 0 8px; }
+  .backup-row button {
+    flex: 1;
+    padding: 11px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .backup-row button:active { transform: scale(0.97); }
+
+  .footer-note {
+    text-align: center;
+    font-size: 10.5px;
+    color: var(--text-faint);
+    margin: 4px 0 8px;
+  }
+
+  nav.tabbar {
+    position: fixed;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+    display: flex;
+    gap: 2px;
+    padding: 5px;
+    border-radius: 999px;
+    background: rgba(20,19,24,0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    max-width: 94vw;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  nav.tabbar::-webkit-scrollbar { display: none; }
+  nav.tabbar button {
+    border: none;
+    background: transparent;
+    color: var(--text-faint);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 9px 13px;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  nav.tabbar button.active { color: #101014; }
+  nav.tabbar button[data-tab="home"].active { background: var(--home); box-shadow: 0 0 16px var(--home-glow); }
+  nav.tabbar button[data-tab="kdrama"].active { background: var(--kdrama); box-shadow: 0 0 16px var(--kdrama-glow); }
+  nav.tabbar button[data-tab="tvshows"].active { background: var(--tvshows); box-shadow: 0 0 16px var(--tvshows-glow); }
+  nav.tabbar button[data-tab="movies"].active { background: var(--movies); box-shadow: 0 0 16px var(--movies-glow); }
+  nav.tabbar button[data-tab="songs"].active { background: var(--songs); box-shadow: 0 0 16px var(--songs-glow); }
+  nav.tabbar button[data-tab="actors"].active { background: var(--actors); box-shadow: 0 0 16px var(--actors-glow); }
+
+  .scroll-btns {
+    position: fixed;
+    right: 14px;
+    bottom: 84px;
+    z-index: 25;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .scroll-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: rgba(20,19,24,0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: var(--text-muted);
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .scroll-btn.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .scroll-btn:active { transform: scale(0.9); }
+  .scroll-btn svg { width: 18px; height: 18px; }
+
+  /* Photo preview modal */
+  #photo-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(6,6,8,0.78);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  #photo-modal.open { display: flex; }
+  .modal-card {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 26px 22px 22px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 6px;
+  }
+  #modal-avatar img {
+    width: 190px;
+    height: 190px;
+    border-radius: 18px;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto 16px;
+  }
+  #modal-avatar .avatar-fallback {
+    width: 190px;
+    height: 190px;
+    border-radius: 18px;
+    font-size: 52px;
+    margin: 0 auto 16px;
+  }
+  #modal-name { font-size: 26px; margin-bottom: 4px; }
+  #modal-hype {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  #modal-hype svg { width: 15px; height: 15px; color: var(--flame); }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="flame-mark">&#128293;</span>
+  <h1 class="display">HYPE TRACKER</h1>
+</header>
+
+<main>
+  <div class="cat-heading" id="cat-heading">
+    <span class="dot"></span>
+    <h2 class="display" id="cat-title">HOME</h2>
+    <span class="sub mono">top pick per category</span>
+  </div>
+
+  <div class="add-row" id="add-row">
+    <input type="text" id="add-input" placeholder="Add a new K-drama">
+    <button class="icon-btn" id="add-btn" aria-label="Add">+</button>
+  </div>
+
+  <p id="cast-status" style="display:none;"></p>
+  <div id="verify-box"></div>
+  <div id="search-results"></div>
+
+  <div class="list-search-row" id="list-search-row">
+    <input type="text" id="list-search-input" placeholder="Search this list...">
+  </div>
+
+  <div id="list" class="item-list"></div>
+
+  <div class="backup-row">
+    <button id="export-btn">Export backup</button>
+    <button id="import-btn">Import backup</button>
+  </div>
+  <input type="file" id="import-file" accept="application/json" style="display:none;">
+  <p class="footer-note">Data is saved on this device automatically. Add this page to your home screen to open it like an app.</p>
+</main>
+
+<nav class="tabbar">
+  <button class="tab active" data-tab="home">Home</button>
+  <button class="tab" data-tab="kdrama">K-Drama</button>
+  <button class="tab" data-tab="tvshows">TV Shows</button>
+  <button class="tab" data-tab="movies">Movies</button>
+  <button class="tab" data-tab="songs">Songs</button>
+  <button class="tab" data-tab="actors">Actors</button>
+</nav>
+
+<div class="scroll-btns">
+  <button class="scroll-btn" id="scroll-top-btn" aria-label="Scroll to top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+  </button>
+  <button class="scroll-btn" id="scroll-bottom-btn" aria-label="Scroll to bottom">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+  </button>
+</div>
+
+<div id="photo-modal">
+  <div class="modal-card">
+    <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+    <div id="modal-avatar"></div>
+    <div id="modal-name" class="display"></div>
+    <div id="modal-hype"></div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'hype-tracker-data-v1';
+
+// Category config drives labels, placeholders, and which lookups run on add.
+// thumbSuffix: extra search term appended when hunting for a poster/thumbnail.
+// fetchCast: whether adding an item should also pull its cast into Actors.
+// isActorSearch: whether typing in add-input triggers the live actor search flow.
+const CATEGORY_ORDER = ['kdrama', 'tvshows', 'movies', 'songs', 'actors'];
+const CATEGORY_CONFIG = {
+  kdrama:  { label: 'K-DRAMA',  tabLabel: 'K-Drama',  placeholder: 'Add a new K-drama',  emptyNoun: 'K-dramas', thumbSuffix: 'TV series', fetchCast: true,  isActorSearch: false },
+  tvshows: { label: 'TV SHOWS', tabLabel: 'TV Shows', placeholder: 'Add a new TV show',  emptyNoun: 'TV shows', thumbSuffix: 'TV series', fetchCast: true,  isActorSearch: false },
+  movies:  { label: 'MOVIES',   tabLabel: 'Movies',   placeholder: 'Add a new movie',    emptyNoun: 'movies',   thumbSuffix: 'film',      fetchCast: true,  isActorSearch: false },
+  songs:   { label: 'SONGS',    tabLabel: 'Songs',    placeholder: 'Add a new song',     emptyNoun: 'songs',    thumbSuffix: 'song',      fetchCast: false, isActorSearch: false },
+  actors:  { label: 'ACTORS',   tabLabel: 'Actors',   placeholder: 'Add an actor (photo lookup tries automatically)', emptyNoun: 'actors', thumbSuffix: null, fetchCast: false, isActorSearch: true }
+};
+const DEFAULT_DATA = { kdrama: [], tvshows: [], movies: [], songs: [], actors: [] };
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return structuredClone(DEFAULT_DATA);
+    const parsed = JSON.parse(raw);
+    return {
+      // "shows" was this category's old name before K-Drama/TV Shows/Movies split out.
+      kdrama: parsed.kdrama || parsed.shows || [],
+      tvshows: parsed.tvshows || [],
+      movies: parsed.movies || [],
+      songs: parsed.songs || [],
+      actors: parsed.actors || []
+    };
+  } catch (e) {
+    return structuredClone(DEFAULT_DATA);
+  }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.error('Could not save', e);
+  }
+}
+
+let data = loadData();
+let current = 'home';
+let searchDebounce = null;
+let listSearchQuery = '';
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function initials(name) {
+  return name.trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+}
+
+function flameIcon() {
+  return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-1 4.2-2.3 5.8C8.2 9.5 7 11.2 7 13.5 7 17.6 9.7 20 12 20s5-2.4 5-6.5c0-1.6-.6-2.9-1.4-4.1-.3 1.6-1.1 2.4-1.9 2.4-1 0-1.3-.9-1-2C13.2 7.8 12.6 4.4 12 2z"/></svg>';
+}
+
+function applyCategoryColor(cat) {
+  const root = document.documentElement.style;
+  root.setProperty('--cur-color', `var(--${cat})`);
+  root.setProperty('--cur-strong', `var(--${cat}-strong)`);
+  root.setProperty('--cur-glow', `var(--${cat}-glow)`);
+  root.setProperty('--cur-dim', `var(--${cat}-dim)`);
+}
+
+function render() {
+  const homeMode = current === 'home';
+  applyCategoryColor(homeMode ? 'home' : current);
+
+  document.querySelectorAll('.tabbar .tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === current);
+  });
+
+  document.getElementById('add-row').style.display = homeMode ? 'none' : 'flex';
+  document.getElementById('list-search-row').style.display = homeMode ? 'none' : 'block';
+  document.getElementById('search-results').innerHTML = '';
+  if (homeMode) {
+    document.getElementById('cast-status').style.display = 'none';
+    document.getElementById('verify-box').style.display = 'none';
+    document.getElementById('verify-box').innerHTML = '';
+  }
+
+  const list = document.getElementById('list');
+
+  if (homeMode) {
+    document.getElementById('cat-title').textContent = 'HOME';
+    document.querySelector('.cat-heading .sub').textContent = 'top pick per category';
+    renderHome(list);
+    if (typeof updateScrollBtns === 'function') updateScrollBtns();
+    return;
+  }
+
+  const cfg = CATEGORY_CONFIG[current];
+  document.querySelector('.cat-heading .sub').textContent = 'sorted by hype';
+  document.getElementById('add-input').placeholder = cfg.placeholder;
+  document.getElementById('list-search-input').placeholder = `Search your ${cfg.emptyNoun}...`;
+  document.getElementById('cat-title').textContent = cfg.label;
+
+  const sorted = [...data[current]].sort((a, b) => b.hype - a.hype);
+  let ranked = sorted.map((item, i) => ({ item, rank: i + 1 }));
+
+  if (listSearchQuery) {
+    const q = listSearchQuery;
+    const matches = ranked.filter(r => r.item.name.toLowerCase().includes(q));
+    const rest = ranked.filter(r => !r.item.name.toLowerCase().includes(q));
+    ranked = [...matches, ...rest];
+  }
+
+  if (sorted.length === 0) {
+    list.innerHTML = `<div class="empty">No ${cfg.emptyNoun} yet. ${cfg.isActorSearch ? 'Search above to add one.' : 'Add your first one above.'}</div>`;
+    if (typeof updateScrollBtns === 'function') updateScrollBtns();
+    return;
+  }
+
+  const maxHype = Math.max(1, ...sorted.map(i => i.hype));
+
+  list.innerHTML = ranked.map(({ item, rank }) => {
+    const width = Math.max(6, Math.round((item.hype / maxHype) * 100));
+    const rankClass = rank === 1 ? ' rank-1' : '';
+    const matchClass = (listSearchQuery && item.name.toLowerCase().includes(listSearchQuery)) ? ' search-match' : '';
+    const avatar = item.thumb
+      ? `<img src="${item.thumb}" alt="">`
+      : `<div class="avatar-fallback">${initials(item.name)}</div>`;
+    return `
+    <div class="item${rankClass}${matchClass}">
+      <div class="rank-num display">${String(rank).padStart(2, '0')}</div>
+      <div class="item-main" data-id="${item.id}">
+        ${avatar}
+        <div class="item-body">
+          <div class="name">${escapeHtml(item.name)}</div>
+          <div class="meter"><div class="meter-fill" style="width:${width}%"></div></div>
+        </div>
+      </div>
+      <button class="del" data-id="${item.id}" aria-label="Delete">&times;</button>
+      <div class="vote-cluster">
+        <button class="downvote" data-id="${item.id}" aria-label="Decrease hype">&minus;</button>
+        <button class="upvote" data-id="${item.id}">${flameIcon()}${item.hype}</button>
+      </div>
+    </div>
+  `;
+  }).join('');
+
+  if (typeof updateScrollBtns === 'function') updateScrollBtns();
+}
+
+function renderHome(list) {
+  list.innerHTML = CATEGORY_ORDER.map(cat => {
+    const cfg = CATEGORY_CONFIG[cat];
+    const items = data[cat];
+    const cssVars = `--card-color:var(--${cat});--card-glow:var(--${cat}-glow);--card-dim:var(--${cat}-dim);--card-strong:var(--${cat}-strong);`;
+
+    if (!items.length) {
+      return `
+      <div class="home-card empty-home-card" data-cat="${cat}" style="${cssVars}">
+        <div class="home-card-label">${cfg.tabLabel}</div>
+        <div class="home-card-empty">No ${cfg.emptyNoun} yet — tap to add one</div>
+      </div>`;
+    }
+
+    const top = [...items].sort((a, b) => b.hype - a.hype)[0];
+    const avatar = top.thumb
+      ? `<img src="${top.thumb}" alt="">`
+      : `<div class="home-card-avatar-fallback">${initials(top.name)}</div>`;
+
+    return `
+    <div class="home-card" data-cat="${cat}" style="${cssVars}">
+      <div class="home-card-label">${cfg.tabLabel}</div>
+      <div class="home-card-main">
+        ${avatar}
+        <div class="home-card-info">
+          <div class="home-card-name">${escapeHtml(top.name)}</div>
+          <div class="home-card-hype">${flameIcon()} ${top.hype} hype</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+document.querySelectorAll('.tabbar .tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    current = btn.dataset.tab;
+    document.getElementById('add-input').value = '';
+    document.getElementById('list-search-input').value = '';
+    listSearchQuery = '';
+    document.getElementById('verify-box').style.display = 'none';
+    document.getElementById('verify-box').innerHTML = '';
+    render();
+  });
+});
+
+document.getElementById('list-search-input').addEventListener('input', e => {
+  listSearchQuery = e.target.value.trim().toLowerCase();
+  render();
+});
+
+document.getElementById('add-btn').addEventListener('click', attemptAdd);
+document.getElementById('add-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') attemptAdd();
+});
+
+async function attemptAdd() {
+  if (current === 'home') return;
+  const input = document.getElementById('add-input');
+  const val = input.value.trim();
+  if (!val) return;
+  const cfg = CATEGORY_CONFIG[current];
+
+  const dupe = data[current].find(i => i.name.toLowerCase() === val.toLowerCase());
+  if (dupe) {
+    input.value = '';
+    setCastStatus(`"${dupe.name}" is already on your ${cfg.emptyNoun} list.`);
+    setTimeout(() => setCastStatus(null), 3000);
+    return;
+  }
+
+  if (cfg.isActorSearch) {
+    performAdd(val);
+    return;
+  }
+
+  setCastStatus(`Checking if "${val}" exists...`);
+  const exists = await checkExists(val);
+  setCastStatus(null);
+
+  if (exists === false) {
+    showVerifyConfirm(val);
+  } else {
+    performAdd(val);
+    if (exists === null) {
+      setCastStatus(`Couldn't verify "${val}" online — added it anyway.`);
+      setTimeout(() => setCastStatus(null), 3500);
+    }
+  }
+}
+
+// Existence check via the Wikipedia search API.
+async function checkExists(name) {
+  try {
+    const url = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(name)}&srlimit=1&format=json&origin=*`;
+    const res = await fetch(url);
+    const json = await res.json();
+    return !!(json.query && json.query.search && json.query.search.length > 0);
+  } catch (err) {
+    return null;
+  }
+}
+
+function showVerifyConfirm(name) {
+  const box = document.getElementById('verify-box');
+  box.style.display = 'block';
+  box.innerHTML = `
+    <p>Couldn't find "${escapeHtml(name)}" on Wikipedia. Add it anyway?</p>
+    <div class="verify-actions">
+      <button class="verify-cancel">Cancel</button>
+      <button class="verify-confirm">Add anyway</button>
+    </div>
+  `;
+  box.querySelector('.verify-confirm').addEventListener('click', () => {
+    box.style.display = 'none';
+    box.innerHTML = '';
+    performAdd(name);
+  });
+  box.querySelector('.verify-cancel').addEventListener('click', () => {
+    box.style.display = 'none';
+    box.innerHTML = '';
+    document.getElementById('add-input').value = '';
+  });
+}
+
+function performAdd(val) {
+  const addedCategory = current;
+  const cfg = CATEGORY_CONFIG[addedCategory];
+  const newItem = { id: uid(), name: val, hype: 0, thumb: null };
+  data[addedCategory].push(newItem);
+  document.getElementById('add-input').value = '';
+  saveData();
+  render();
+
+  if (cfg.fetchCast) fetchCastAndAdd(val);
+
+  if (cfg.isActorSearch) {
+    fetchThumbForName(val).then(thumb => {
+      if (!thumb) return;
+      newItem.thumb = thumb;
+      saveData();
+      if (current === addedCategory) render();
+    });
+  } else if (cfg.thumbSuffix) {
+    fetchThumbSmart(val, cfg.thumbSuffix).then(thumb => {
+      if (!thumb) return;
+      newItem.thumb = thumb;
+      saveData();
+      if (current === addedCategory) render();
+    });
+  }
+}
+
+// Tries a disambiguated query first ("Title TV series" / "Title film" / "Title song"),
+// then falls back to the plain name if that comes up empty.
+async function fetchThumbSmart(name, suffix) {
+  let thumb = suffix ? await fetchThumbForName(`${name} ${suffix}`) : null;
+  if (!thumb) thumb = await fetchThumbForName(name);
+  return thumb;
+}
+
+async function fetchThumbForName(name) {
+  try {
+    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(name)}&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=200&format=json&origin=*`;
+    const res = await fetch(url);
+    const json = await res.json();
+    const pages = json.query && json.query.pages ? Object.values(json.query.pages) : [];
+    if (pages.length && pages[0].thumbnail) return pages[0].thumbnail.source;
+  } catch (err) {
+    // silently skip - a missing photo isn't worth an error message
+  }
+  return null;
+}
+
+function setCastStatus(text) {
+  const el = document.getElementById('cast-status');
+  if (!text) { el.style.display = 'none'; el.textContent = ''; return; }
+  el.style.display = 'block';
+  el.textContent = text;
+}
+
+// Cast lookup uses Wikidata's structured "cast member" (P161) property — a clean,
+// purpose-built list rather than something parsed out of free text. Everything
+// else (thumbnails, actor search, existence check) stays on the Wikipedia API.
+async function fetchCastAndAdd(showTitle) {
+  setCastStatus(`Looking up the cast of "${showTitle}"...`);
+  try {
+    const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(showTitle)}&language=en&format=json&origin=*&limit=1`;
+    const searchRes = await fetch(searchUrl);
+    const searchJson = await searchRes.json();
+    const match = searchJson.search && searchJson.search[0];
+    if (!match) {
+      setCastStatus(`Couldn't find "${showTitle}" on Wikidata. Add cast manually on the Actors tab.`);
+      setTimeout(() => setCastStatus(null), 4000);
+      return;
+    }
+
+    const claimsUrl = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${match.id}&property=P161&format=json&origin=*`;
+    const claimsRes = await fetch(claimsUrl);
+    const claimsJson = await claimsRes.json();
+    const claims = (claimsJson.claims && claimsJson.claims.P161) || [];
+    if (claims.length === 0) {
+      setCastStatus(`No cast list found for "${showTitle}" on Wikidata.`);
+      setTimeout(() => setCastStatus(null), 4000);
+      return;
+    }
+
+    const castIds = claims
+      .map(c => c.mainsnak && c.mainsnak.datavalue && c.mainsnak.datavalue.value && c.mainsnak.datavalue.value.id)
+      .filter(Boolean)
+      .slice(0, 12);
+
+    const entitiesUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${castIds.join('|')}&props=labels&languages=en&format=json&origin=*`;
+    const entitiesRes = await fetch(entitiesUrl);
+    const entitiesJson = await entitiesRes.json();
+
+    let added = 0;
+    const newlyAdded = [];
+    for (const id of castIds) {
+      const entity = entitiesJson.entities && entitiesJson.entities[id];
+      const label = entity && entity.labels && entity.labels.en && entity.labels.en.value;
+      if (!label) continue;
+      if (data.actors.some(a => a.name.toLowerCase() === label.toLowerCase())) continue;
+      const newItem = { id: uid(), name: label, hype: 0, thumb: null };
+      data.actors.push(newItem);
+      newlyAdded.push(newItem);
+      added++;
+    }
+    saveData();
+    if (current === 'actors') render();
+
+    Promise.all(newlyAdded.map(item => fetchThumbForName(item.name).then(thumb => {
+      if (thumb) item.thumb = thumb;
+    }))).then(() => {
+      saveData();
+      if (current === 'actors') render();
+    });
+
+    setCastStatus(added > 0
+      ? `Added ${added} cast member${added === 1 ? '' : 's'} from "${showTitle}" to Actors.`
+      : `Cast of "${showTitle}" is already in your Actors list.`);
+    setTimeout(() => setCastStatus(null), 4000);
+  } catch (err) {
+    setCastStatus(`Couldn't reach Wikidata to fetch the cast (this browser may be blocking network requests from a local file). Add cast manually on the Actors tab.`);
+    setTimeout(() => setCastStatus(null), 6000);
+  }
+}
+
+document.getElementById('add-input').addEventListener('input', e => {
+  if (current === 'home' || !CATEGORY_CONFIG[current].isActorSearch) return;
+  clearTimeout(searchDebounce);
+  const q = e.target.value.trim();
+  if (!q) {
+    document.getElementById('search-results').innerHTML = '';
+    return;
+  }
+  searchDebounce = setTimeout(() => searchActors(q), 400);
+});
+
+async function searchActors(query) {
+  const box = document.getElementById('search-results');
+  box.innerHTML = `<div class="empty" style="padding:16px;">Searching...</div>`;
+  try {
+    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query + ' actor')}&gsrlimit=5&prop=pageimages|extracts&exintro&explaintext&exchars=120&pithumbsize=100&format=json&origin=*`;
+    const res = await fetch(url);
+    const json = await res.json();
+    const pages = json.query && json.query.pages ? Object.values(json.query.pages) : [];
+    if (pages.length === 0) {
+      box.innerHTML = `<div class="empty" style="padding:16px;">No matches. You can still add "${escapeHtml(query)}" manually below.</div>`;
+      return;
+    }
+    box.innerHTML = pages.map(p => `
+      <div class="search-result">
+        ${p.thumbnail ? `<img src="${p.thumbnail.source}" alt="">` : `<div class="avatar-fallback">${initials(p.title)}</div>`}
+        <div class="info">
+          <div class="name">${escapeHtml(p.title)}</div>
+          <div class="extract">${escapeHtml(p.extract || '')}</div>
+        </div>
+        <button data-name="${escapeHtml(p.title)}" data-thumb="${p.thumbnail ? p.thumbnail.source : ''}">Add</button>
+      </div>
+    `).join('');
+  } catch (err) {
+    box.innerHTML = `<div class="empty" style="padding:16px;">Couldn't reach Wikipedia. Check your connection, or add "${escapeHtml(query)}" manually below.</div>`;
+  }
+}
+
+document.getElementById('search-results').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-name]');
+  if (!btn) return;
+  const name = btn.dataset.name;
+  const thumb = btn.dataset.thumb || null;
+  if (data.actors.some(a => a.name.toLowerCase() === name.toLowerCase())) {
+    document.getElementById('add-input').value = '';
+    document.getElementById('search-results').innerHTML = '';
+    render();
+    return;
+  }
+  data.actors.push({ id: uid(), name, hype: 0, thumb });
+  saveData();
+  document.getElementById('add-input').value = '';
+  document.getElementById('search-results').innerHTML = '';
+  render();
+});
+
+document.getElementById('list').addEventListener('click', e => {
+  const homeCard = e.target.closest('.home-card');
+  if (homeCard) {
+    current = homeCard.dataset.cat;
+    document.getElementById('add-input').value = '';
+    document.getElementById('list-search-input').value = '';
+    listSearchQuery = '';
+    render();
+    return;
+  }
+
+  const upBtn = e.target.closest('.upvote');
+  const downBtn = e.target.closest('.downvote');
+  const delBtn = e.target.closest('.del');
+  const mainBtn = e.target.closest('.item-main');
+
+  if (upBtn) {
+    const item = data[current].find(i => i.id === upBtn.dataset.id);
+    if (item) {
+      item.hype += 1;
+      saveData();
+      upBtn.classList.add('burst');
+      setTimeout(() => render(), 140);
+    }
+  } else if (downBtn) {
+    const item = data[current].find(i => i.id === downBtn.dataset.id);
+    if (item && item.hype > 0) {
+      item.hype -= 1;
+      saveData();
+      render();
+    }
+  } else if (delBtn) {
+    data[current] = data[current].filter(i => i.id !== delBtn.dataset.id);
+    saveData();
+    render();
+  } else if (mainBtn) {
+    const item = data[current].find(i => i.id === mainBtn.dataset.id);
+    if (item) openModal(item);
+  }
+});
+
+function openModal(item) {
+  const avatarWrap = document.getElementById('modal-avatar');
+  avatarWrap.innerHTML = item.thumb
+    ? `<img src="${item.thumb}" alt="">`
+    : `<div class="avatar-fallback">${initials(item.name)}</div>`;
+  document.getElementById('modal-name').textContent = item.name;
+  document.getElementById('modal-hype').innerHTML = `${flameIcon()} ${item.hype} hype`;
+  document.getElementById('photo-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('photo-modal').classList.remove('open');
+}
+
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('photo-modal').addEventListener('click', e => {
+  if (e.target.id === 'photo-modal') closeModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+document.getElementById('export-btn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `hype-tracker-backup-${date}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('import-btn').addEventListener('click', () => {
+  document.getElementById('import-file').click();
+});
+
+document.getElementById('import-file').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      data = {
+        kdrama: parsed.kdrama || parsed.shows || [],
+        tvshows: parsed.tvshows || [],
+        movies: parsed.movies || [],
+        songs: parsed.songs || [],
+        actors: parsed.actors || []
+      };
+      saveData();
+      render();
+      setCastStatus('Backup restored.');
+      setTimeout(() => setCastStatus(null), 3000);
+    } catch (err) {
+      setCastStatus("Couldn't read that file — make sure it's a backup exported from this app.");
+      setTimeout(() => setCastStatus(null), 4000);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+const scrollTopBtn = document.getElementById('scroll-top-btn');
+const scrollBottomBtn = document.getElementById('scroll-bottom-btn');
+
+scrollTopBtn.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+scrollBottomBtn.addEventListener('click', () => {
+  window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+});
+
+function updateScrollBtns() {
+  const scrollY = window.scrollY;
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  const nearTop = scrollY < 80;
+  const nearBottom = maxScroll - scrollY < 80;
+  scrollTopBtn.classList.toggle('visible', !nearTop && maxScroll > 80);
+  scrollBottomBtn.classList.toggle('visible', !nearBottom && maxScroll > 80);
+}
+
+window.addEventListener('scroll', updateScrollBtns, { passive: true });
+window.addEventListener('resize', updateScrollBtns);
+
+render();
+updateScrollBtns();
+</script>
+</body>
+</html>
